@@ -423,7 +423,7 @@ context vim {
         tipoCessazionePrestazione    : String(2);
         codiceArticolo               : Association to many CodiceArticolo
                                          on codiceArticolo.dettaglioLinee_Id = $self.ID;
-        descrizione                  : String(500);
+        descrizione                  : String(1000);
         quantita                     : Decimal(21, 4);
         unitaMisura                  : String(10);
         dataInizioPeriodo            : Date;
