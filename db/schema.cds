@@ -101,6 +101,7 @@ context vim {
         invoiceReceiptDate           : Date;
         postingDate                  : Date;
         invoicingParty               : String(10);
+        supplierName                 : String;
         dueCalculationBaseDate       : Date;
         manualCashDiscount           : Decimal(14, 3);
         paymentTerms                 : String(4);
