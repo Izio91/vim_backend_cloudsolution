@@ -115,6 +115,11 @@ module.exports = function (srv) {
         await performRequest(srv, request, './func/extended');
     });
 
+    srv.on('getDataForCSV', '*', async request => {
+        await performRequest(srv, request, './func/getDataForCSV');
+    });
+
+
     /**
      * Function for handling user capabilities requests based on role scopes.
      * 

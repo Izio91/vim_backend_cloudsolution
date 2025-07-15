@@ -8,16 +8,12 @@ module.exports = async (request, tx) => {
     // Extract query parameters from the incoming request.
     let params = request.req.query;
 
-    // Extract pagination parameters ($top and $skip)
-    const top = parseInt(params.$top) || 10;   // Default value for $top is 10
-    const skip = parseInt(params.$skip) || 0;  // Default value for $skip is 0
-
-    let data, query, countQuery, countResult, whereConditions = [];
+    let data, query, whereConditions = [];
 
     try {
         // Build a base query to select all fields from the 'V_DOC_EXTENDED' table.
-        query = SELECT('*').from('V_DOC_EXTENDED').orderBy('CREATEDAT desc').limit(top, skip);
-        countQuery = SELECT('*').from('V_DOC_EXTENDED');
+        query = SELECT('*').from('V_DOC_EXTENDED').orderBy('CREATEDAT desc');
+        
         // If there are parameters present in the request, proceed to process each one.
         if (params != null && Object.keys(params).length > 0) {
 
@@ -74,13 +70,12 @@ module.exports = async (request, tx) => {
             // If there are any conditions, append them to the query.
             if (whereConditions.length > 0) {
                 query.where(whereConditions.join(' AND '));
-                countQuery.where(whereConditions.join(' AND '));
             }
         }
 
         // Execute the query and retrieve the data from the database.
         data = await tx.run(query);
-        countResult = await tx.run(countQuery);
+        
         // Transcode values
         let aData = data.map(item => {
             item.DOCCATEGORY = transcoder.docCategory[item.DOCCATEGORY];
@@ -91,7 +86,7 @@ module.exports = async (request, tx) => {
         return {
             status: 200,
             result: aData,
-            count: countResult.length,
+            count: aData.length,
             message: aData.length == 0 ? 'No Data Found' : 'Executed',
         };
 

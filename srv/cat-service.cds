@@ -37,6 +37,7 @@ service CatalogService {
     entity DatiDDT                      as projection on vim.DatiDDT;
     // functions and actions
     function extended()                                                     returns array of String;
+    function getDataForCSV()                                                returns array of String;
     function capabilities()                                                 returns array of String;
     function users()                                                        returns array of String;
     function lockStatus()                                                   returns array of String;
