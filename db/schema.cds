@@ -96,6 +96,7 @@ context vim {
           keyTransaction4 = 'Subsequentcredit';
         } default 'Invoice';
         companyCode                  : String(4);
+        supplierInvoiceIsCreditMemo  : String(1);
         supplierPostingLineItemText  : String(50);
         taxIsCalculatedAutomatically : Boolean;
         invoiceReceiptDate           : Date;

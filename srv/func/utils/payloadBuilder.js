@@ -121,6 +121,7 @@ function buildPayloadForSubmitInvoice(jsonInvoice) {
     });
     let oPayload = {
         CompanyCode: jsonInvoice.CompanyCode,
+        SupplierInvoiceIsCreditMemo: jsonInvoice.SupplierInvoiceIsCreditMemo,
         DocumentDate: getDateWithMilliseconds(jsonInvoice.DocumentDate),
         InvoiceReceiptDate: getDateWithMilliseconds(jsonInvoice.InvoiceReceiptDate),
         PostingDate: getDateWithMilliseconds(jsonInvoice.PostingDate),

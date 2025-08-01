@@ -70,6 +70,7 @@ async function updateHeaders(Invoice, tx) {
     const invoiceQuery = UPDATE('InvoiceIntegrationInfo')
         .set({
             "transaction": Invoice.Transaction,
+            "supplierInvoiceIsCreditMemo": Invoice.SupplierInvoiceIsCreditMemo,
             "companyCode": Invoice.CompanyCode,
             "invoiceReceiptDate": Invoice.InvoiceReceiptDate,
             "postingDate": Invoice.PostingDate,

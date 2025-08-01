@@ -161,6 +161,7 @@ const schema = {
         header_Id_InvoiceIntegrationInfo: Joi.string().max(36).required(),
         Transaction: Joi.string().max(28).allow(null),
         CompanyCode: Joi.string().max(4).allow(null),
+        SupplierInvoiceIsCreditMemo: Joi.string().max(1).allow(null,''),
         DocumentDate: Joi.date().allow(null),
         InvoiceReceiptDate: Joi.date().allow(null),
         PostingDate: Joi.date().allow(null),
