@@ -15,8 +15,14 @@ module.exports = async (request, tx) => {
     let data, query, countQuery, countResult, whereConditions = [];
 
     try {
+
+        // Extract sorting parameters
+        const orderByField = params.orderBy || 'CREATEDAT'; // Default sort field
+        const sortDirection = params.descending === 'true' ? 'desc' : 'asc';
+
+
         // Build a base query to select all fields from the 'V_DOC_EXTENDED' table.
-        query = SELECT('*').from('V_DOC_EXTENDED').orderBy('CREATEDAT desc').limit(top, skip);
+        query = SELECT('*').from('V_DOC_EXTENDED').orderBy(`${orderByField} ${sortDirection}`).limit(top, skip);
         countQuery = SELECT('*').from('V_DOC_EXTENDED');
 
         // If there are parameters present in the request, proceed to process each one.
@@ -24,7 +30,7 @@ module.exports = async (request, tx) => {
 
             // Iterate through each parameter in the request query.
             for (let i in params) {
-                if (i !== '$top' && i !== '$skip') {
+                if (i !== '$top' && i !== '$skip' && i !== 'orderBy' && i !== 'descending') {
                     if (i === 'ASSIGNEDTO') {
                         // Handle 'ASSIGNEDTO' parameter (filter for documents assigned to the user).
                         let keys = parseMultipleParamsForDocPack(params[i]);
