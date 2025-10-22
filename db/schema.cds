@@ -89,12 +89,7 @@ context vim {
   entity InvoiceIntegrationInfo {
     key ID                           : UUID;
         navigation_to                : Association to one DOC_PACK;
-        transaction                  : String enum {
-          keyTransaction1 = 'Invoice';
-          keyTransaction2 = 'Creditmemo';
-          keyTransaction3 = 'Subsequentdebit';
-          keyTransaction4 = 'Subsequentcredit';
-        } default 'Invoice';
+        transaction                  : String;
         companyCode                  : String(4);
         supplierInvoiceIsCreditMemo  : String(1);
         supplierPostingLineItemText  : String(50);
@@ -562,6 +557,7 @@ entity V_DOC_EXTENDED {
       ID_OCCUR                                               : String(36)   @title: 'ID_OCCUR: ID_OCCUR';
       DOCCATEGORY                                            : String(13)   @title: 'DOCCATEGORY: DOCCATEGORY';
       IMPORTOTOTALEDOCUMENTO                                 : Decimal(15)  @title: 'IMPORTOTOTALEDOCUMENTO: DATIGENERALI_DATIGENERALIDOCUMENTO_IMPORTOTOTALEDOCUMENTO';
+      TIPODOCUMENTO                                          : String(13)   @title: 'TIPODOCUMENTO: DATIGENERALI_DATIGENERALIDOCUMENTO_TIPODOCUMENTO';
       CEDENTEPRESTATORE_DATIANAGRAFICI_IDFISCALEIVA_IDPAESE  : String(2)    @title: 'CEDENTEPRESTATORE_DATIANAGRAFICI_IDFISCALEIVA_IDPAESE: CEDENTEPRESTATORE_DATIANAGRAFICI_IDFISCALEIVA_IDPAESE';
       CEDENTEPRESTATORE_DATIANAGRAFICI_IDFISCALEIVA_IDCODICE : String(28)   @title: 'CEDENTEPRESTATORE_DATIANAGRAFICI_IDFISCALEIVA_IDCODICE: CEDENTEPRESTATORE_DATIANAGRAFICI_IDFISCALEIVA_IDCODICE';
       VAT                                                    : String(30)   @title: 'VAT: VAT';

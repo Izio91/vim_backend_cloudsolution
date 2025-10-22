@@ -162,7 +162,11 @@ function mergeGLAccountLineDetailsWithIntegrationInfoBody(dataDettaglioLinee, da
     }));
 }
 
-function getAccountingDocumentType(sBodyDocumentType) { // In the future will be a request to a transcoder service, but currently it is just a placeholder.
+function getTransaction(sTipoDocumento) { 
+    return sTipoDocumento == 'TD04' ? 'Creditmemo' : 'Invoice';
+}
+
+function getAccountingDocumentType(sBodyDocumentType) { 
     return transcoder.accountingDocumentType[sBodyDocumentType];
 }
 
@@ -249,6 +253,7 @@ async function createResultObject(headerData, bodyData, paymentData, serviceRequ
     const aLineDetailsMergedWithPOIntegrations = mergePOLineDetailsWithIntegrationInfoBody(dataDettaglioLinee, dataPOIntegrationInfoBody);
     const aLineDetailsMergedWithGLAccountIntegrations = mergeGLAccountLineDetailsWithIntegrationInfoBody(dataDettaglioLinee, dataGLAccountIntegrationInfoBody);
 
+    const sTransaction = getTransaction(bodyFatturaElettronica.datiGenerali_DatiGeneraliDocumento_TipoDocumento);
     const sAccountingDocumentType = await getAccountingDocumentType(bodyFatturaElettronica.datiGenerali_DatiGeneraliDocumento_TipoDocumento);
     const sCompanyCode = headerInvoiceIntegrationInfo.companyCode ? headerInvoiceIntegrationInfo.companyCode : null;
     const sTaxDeterminationDate = headerInvoiceIntegrationInfo.taxDeterminationDate ? headerInvoiceIntegrationInfo.taxDeterminationDate : bodyFatturaElettronica.datiGenerali_DatiGeneraliDocumento_Data;
@@ -275,7 +280,7 @@ async function createResultObject(headerData, bodyData, paymentData, serviceRequ
     return {
         "header_Id_ItalianInvoiceTrace": headerFatturaElettronica.ID,
         "header_Id_InvoiceIntegrationInfo": headerInvoiceIntegrationInfo.ID,
-        "Transaction": headerInvoiceIntegrationInfo.transaction ? headerInvoiceIntegrationInfo.transaction : 'Invoice',
+        "Transaction": headerInvoiceIntegrationInfo.transaction ? headerInvoiceIntegrationInfo.transaction : sTransaction,
         "CompanyCode": sCompanyCode,
         "SupplierInvoiceIsCreditMemo": headerInvoiceIntegrationInfo.supplierInvoiceIsCreditMemo ? headerInvoiceIntegrationInfo.supplierInvoiceIsCreditMemo : '',
         "Vat": headerFatturaElettronica.cedentePrestatore_DatiAnagrafici_IdFiscaleIVA_IdPaese + headerFatturaElettronica.cedentePrestatore_DatiAnagrafici_IdFiscaleIVA_IdCodice,

@@ -784,9 +784,16 @@
     <attribute id="VENDOR_NAME" order="35" displayAttribute="false" attributeHierarchyActive="false">
       <descriptions defaultDescription="CEDENTEPRESTATORE_DATIANAGRAFICI_ANAGRAFICA_DENOMINAZIONE"/>
   
+  
       <keyMapping columnObjectName="Invoice_with_LatestAction_and_ModUser_and_LockUser_and_ActionPerformedUser" columnName="CEDENTEPRESTATORE_DATIANAGRAFICI_ANAGRAFICA_DENOMINAZIONE"/>
   
-    </attribute></attributes>
+  
+    </attribute>
+    <attribute id="TIPODOCUMENTO" order="36" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="DATIGENERALI_DATIGENERALIDOCUMENTO_TIPODOCUMENTO"/>
+      <keyMapping columnObjectName="Invoice_with_LatestAction_and_ModUser_and_LockUser_and_ActionPerformedUser" columnName="DATIGENERALI_DATIGENERALIDOCUMENTO_TIPODOCUMENTO"/>
+    </attribute>
+  </attributes>
   <calculatedAttributes>
     <calculatedAttribute id="LASTCHANGEDBYNAME" order="26" semanticType="empty" displayAttribute="false" attributeHierarchyActive="false">
       <descriptions defaultDescription="LASTCHANGEDBYNAME"/>
@@ -816,11 +823,11 @@
       <keyCalculation datatype="NVARCHAR" expressionLanguage="SQL" length="13">
         <formula>CASE &quot;ID_OCCUR&quot; 
 	 WHEN null then CASE  
-                     WHEN &quot;IMPORTOTOTALEDOCUMENTO&quot; &lt; 0 then 'NONPOCREDM' 
+                     WHEN &quot;TIPODOCUMENTO&quot; = 'TD04' then 'NONPOCREDM' 
                      ELSE 'NONPOINV' 
                      END 
 	 ELSE CASE 
-            WHEN &quot;IMPORTOTOTALEDOCUMENTO&quot; &lt; 0 then 'POCREDM' 
+            WHEN &quot;TIPODOCUMENTO&quot; = 'TD04' then 'POCREDM' 
             ELSE 'POINV'
             END 
  END</formula>
