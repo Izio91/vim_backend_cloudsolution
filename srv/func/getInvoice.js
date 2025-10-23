@@ -1,4 +1,5 @@
 const transcoder = require('./utils/transcoders');
+const { v4: uuidv4 } = require('uuid');
 
 "use strict";
 
@@ -11,8 +12,10 @@ module.exports = async (request, tx) => {
     }
 
     try {
+        const serviceS4_HANA = await cds.connect.to(process.env['Destination_OData_S4HANA']);
+        const serviceRequestS4_HANA = serviceS4_HANA.tx(request);
         // Fetch header data based on PackageId
-        const headerData = await fetchHeaderData(tx, packageId);
+        const headerData = await fetchHeaderData(tx, packageId, serviceRequestS4_HANA);
         if (!headerData) {
             // Return error if header data not found
             return { status: 404, message: 'Data not found' };
@@ -22,8 +25,6 @@ module.exports = async (request, tx) => {
         const bodyData = await fetchBodyData(tx, headerData.headerFatturaElettronica.ID, headerData.headerInvoiceIntegrationInfo.ID);
         const paymentData = await fetchPaymentData(tx, bodyData.bodyFatturaElettronica.ID);
 
-        const serviceS4_HANA = await cds.connect.to(process.env['Destination_OData_S4HANA']);
-        const serviceRequestS4_HANA = serviceS4_HANA.tx(request);
         // Construct and return the final result object with all retrieved data
         const result = await createResultObject(headerData, bodyData, paymentData, serviceRequestS4_HANA);
         return { status: 200, result: result, message: 'Executed' };
@@ -35,7 +36,7 @@ module.exports = async (request, tx) => {
 
 // Fetch header data for a specific package
 // Get error log during last submit attempt (if any)
-async function fetchHeaderData(tx, packageId) {
+async function fetchHeaderData(tx, packageId, serviceRequestS4_HANA) {
     const errorLog = (await tx.run(
         SELECT('*').from('ERROR_LOG')
             .where({ PackageId: packageId })
@@ -56,9 +57,33 @@ async function fetchHeaderData(tx, packageId) {
         SELECT('*').from('InvoiceIntegrationInfo').where({ navigation_to_PackageId: packageId })
     ))[0];
 
-    const dataSupplierInvoiceWhldgTax = (await tx.run(
+    var dataSupplierInvoiceWhldgTax = (await tx.run(
         SELECT('*').from('SupplierInvoiceWhldgTax').where({ header_Id: headerInvoiceIntegrationInfo.ID })
     ));
+
+    // If there are no withholding tax and exists an InvoicingParty-VendorCode then create an entry in SupplierInvoiceWhldgTax and retrieve it
+    if (dataSupplierInvoiceWhldgTax.length === 0 ) {
+        if (headerInvoiceIntegrationInfo.invoicingParty !== null) {
+            let oResultWithholdingTaxRequest = await serviceRequestS4_HANA.get(process.env['Path_API_WITHHOLDINGTAX']+"&$filter=Supplier eq '"+headerInvoiceIntegrationInfo.invoicingParty+"'&$select=WithholdingTaxType,WithholdingTaxCode");
+            if (oResultWithholdingTaxRequest.length > 0) {
+                let aNewRecords = [{
+                    ID: uuidv4(),
+                    header_Id: headerInvoiceIntegrationInfo.ID,
+                    withholdingTaxType: oResultWithholdingTaxRequest[0].WithholdingTaxType,
+                    withholdingTaxCode: oResultWithholdingTaxRequest[0].WithholdingTaxCode,
+                    withholdingTaxBaseAmount: null,
+                    whldgTaxBaseIsEnteredManually: null
+                }];
+
+                await tx.run(INSERT.into('SupplierInvoiceWhldgTax')
+                    .entries(aNewRecords));
+
+                dataSupplierInvoiceWhldgTax = (await tx.run(
+                    SELECT('*').from('SupplierInvoiceWhldgTax').where({ header_Id: headerInvoiceIntegrationInfo.ID })
+                ));
+            }
+        }
+    } 
 
     return { errorLog, headerFatturaElettronica, headerInvoiceIntegrationInfo, dataSupplierInvoiceWhldgTax };
 }
@@ -261,7 +286,6 @@ async function createResultObject(headerData, bodyData, paymentData, serviceRequ
     const aGLAccountRecords = aLineDetailsMergedWithGLAccountIntegrations.map((line, index) => createLineItemForGLAccount(index + 1, line, bodyFatturaElettronica, sCompanyCode));
 
     const aPORecords = await Promise.all(aLineDetailsMergedWithPOIntegrations.map((line, index) => createLineItemForPO(index + 1, line, bodyFatturaElettronica, serviceRequestS4_HANA, sCompanyCode, headerInvoiceIntegrationInfo)));
-
     const aDataSupplierInvoiceWhldgTax = dataSupplierInvoiceWhldgTax.map((oItem, index) => {
         return {
             "supplierInvoiceWhldgTax_Id": oItem.ID,
