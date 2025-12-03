@@ -395,6 +395,11 @@ module.exports = function (srv) {
         await performRequest(srv, request, './func/getDeliveryNoteRef');
     });
 
+
+    srv.on('getMassiveDeliveryNoteRef', '*', async request => {
+        await performRequest(srv, request, './func/getMassiveDeliveryNoteRef');
+    });
+
     srv.on('getServiceEntrySheetRef', '*', async request => {
         await performRequest(srv, request, './func/getServiceEntrySheetRef');
     });
