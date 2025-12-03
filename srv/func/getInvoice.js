@@ -283,7 +283,7 @@ async function createResultObject(headerData, bodyData, paymentData, serviceRequ
     const sCompanyCode = headerInvoiceIntegrationInfo.companyCode ? headerInvoiceIntegrationInfo.companyCode : null;
     const sTaxDeterminationDate = headerInvoiceIntegrationInfo.taxDeterminationDate ? headerInvoiceIntegrationInfo.taxDeterminationDate : bodyFatturaElettronica.datiGenerali_DatiGeneraliDocumento_Data;
     // Generate arrays for GL Account and Purchase Order records
-    const aGLAccountRecords = aLineDetailsMergedWithGLAccountIntegrations.map((line, index) => createLineItemForGLAccount(index + 1, line, bodyFatturaElettronica, sCompanyCode));
+    const aGLAccountRecords = aLineDetailsMergedWithGLAccountIntegrations.map((line, index) => createLineItemForGLAccount(index + 1, line, bodyFatturaElettronica, sCompanyCode, sTransaction));
 
     const aPORecords = await Promise.all(aLineDetailsMergedWithPOIntegrations.map((line, index) => createLineItemForPO(index + 1, line, bodyFatturaElettronica, serviceRequestS4_HANA, sCompanyCode, headerInvoiceIntegrationInfo)));
     const aDataSupplierInvoiceWhldgTax = dataSupplierInvoiceWhldgTax.map((oItem, index) => {
@@ -363,7 +363,7 @@ function getTaxCode(aliquotaIVA, natura) {
 }
 
 // Create a line item object for GL Account records
-function createLineItemForGLAccount(index, oLineDetail, bodyFatturaElettronica, sCompanyCode) {
+function createLineItemForGLAccount(index, oLineDetail, bodyFatturaElettronica, sCompanyCode, sTransaction) {
     return {
         "lineDetail_ID": oLineDetail.ID,
         "headerGLAccountIntegrationInfo_Id": oLineDetail.header_Id,
@@ -373,7 +373,7 @@ function createLineItemForGLAccount(index, oLineDetail, bodyFatturaElettronica, 
         "SupplierInvoiceItem": String(index + 1).padStart(4, '0'),
         "CompanyCode": sCompanyCode,
         "GLAccount": oLineDetail.glAccount ? oLineDetail.glAccount : null,
-        "DebitCreditCode": oLineDetail.debitCreditCode ? oLineDetail.debitCreditCode : "S",
+        "DebitCreditCode": oLineDetail.debitCreditCode ? oLineDetail.debitCreditCode : sTransaction === 'Creditmemo' ? "H" : "S",
         "DocumentCurrency": bodyFatturaElettronica.datiGenerali_DatiGeneraliDocumento_Divisa ? bodyFatturaElettronica.datiGenerali_DatiGeneraliDocumento_Divisa : null,
         "SupplierInvoiceItemAmount": oLineDetail.prezzoTotale ? oLineDetail.prezzoTotale : null,
         "TaxCode": oLineDetail.taxCode ? oLineDetail.taxCode : getTaxCode(oLineDetail.aliquotaIVA, oLineDetail.natura),
