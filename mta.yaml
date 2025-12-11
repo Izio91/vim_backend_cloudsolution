@@ -33,6 +33,7 @@ modules:
       Path_API_WITHHOLDINGTAX: "/sap/opu/odata/sap/API_BUSINESS_PARTNER/A_SupplierWithHoldingTax?$format=json"
       Path_API_WITHHOLDINGTAXES: "/sap/opu/odata/sap/YY1_WITHHOLDINGTAXES_CDS/YY1_WithholdingTaxes?$format=json"
       Path_API_SUPPLIER_INVOICE: "/sap/opu/odata/sap/API_SUPPLIERINVOICE_PROCESS_SRV/A_SupplierInvoice"
+      Path_API_OPLACCTGDOCITEMCUBE: "/sap/opu/odata/sap/API_OPLACCTGDOCITEMCUBE_SRV/A_OperationalAcctgDocItemCube?$format=json&$select=AccountingDocument,CompanyCode,FiscalYear"
       Path_API_GLACCOUNTLINEITEM: "/sap/opu/odata/sap/API_GLACCOUNTLINEITEM/GLAccountLineItem"
       Path_API_CV_ATTACHMENT_SRV: "/sap/opu/odata/sap/API_CV_ATTACHMENT_SRV/AttachmentContentSet"
       Path_API_YY1_GLACCOUNTS_CDS: "/sap/opu/odata/sap/YY1_GLACCOUNTS_CDS/YY1_GLAccounts?$format=json"
