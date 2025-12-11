@@ -1,5 +1,6 @@
 const schema = require('./utils/validator');
 const { v4: uuidv4 } = require('uuid');
+const logErrorHandler = require('./logErrorHandler')
 
 "use strict";
 
@@ -15,6 +16,22 @@ module.exports = async (request, tx) => {
     const valid = validateInvoice(Invoice);
     if (!valid.status) {
         return { status: 422, message: valid.message }
+    }
+
+    const oResult = await checkIfAlreadySubmitted(Invoice, request);
+    if (oResult.length > 0) {
+        const errorMessage = `Controllare se il documento è già stato acquisito con il numero ${oResult[0].CompanyCode} ${oResult[0].AccountingDocument} ${oResult[0].FiscalYear}`;
+        try {
+            await logErrorHandler(request, tx, errorMessage);
+        } catch (logErr) {
+            // If logging fails, we still need to reject the request
+            console.error('logErrorHandler failed:', logErr);
+        }
+
+        return request.error({
+            status: 500,
+            message: errorMessage || 'An unexpected error occurred'
+        });
     }
 
     const aNewSupplierInvoiceWhldgTaxRecords = Invoice.To_SupplierInvoiceWhldgTax.filter(oItem => oItem.supplierInvoiceWhldgTax_Id === null);
@@ -48,6 +65,26 @@ function validateInvoice(invoice) {
     let valid = error == null;
     let details = error ? error.message : null;
     return { status: valid, message: details };
+}
+
+// Check if current invoice has already submitted in S/4
+async function checkIfAlreadySubmitted(Invoice, request) {
+    const DocumentDate = Invoice.DocumentDate;
+    const Supplier = Invoice.InvoicingParty;
+    const DocumentReferenceID = Invoice.SupplierInvoiceIDByInvcgParty;
+    
+    const amount = Number(Invoice.InvoiceGrossAmount);
+    const hasAmount = Invoice.InvoiceGrossAmount !== null && Invoice.InvoiceGrossAmount !== undefined && !Number.isNaN(amount);
+    var posAmountInTransactionCurrency = 0.00;
+    var negAmountInTransactionCurrency = 0.00;
+    if (hasAmount) {
+        posAmountInTransactionCurrency = amount;
+        negAmountInTransactionCurrency = -amount;
+    }
+
+    const serviceS4_HANA = await cds.connect.to(process.env['Destination_OData_S4HANA']);
+    const serviceRequestS4_HANA = serviceS4_HANA.tx(request);
+    return await serviceRequestS4_HANA.get(process.env['Path_API_OPLACCTGDOCITEMCUBE'] + `&$filter=DocumentDate eq datetime'${DocumentDate}T00:00:00' and Supplier eq '${Supplier}' and DocumentReferenceID eq '${DocumentReferenceID}' and (AmountInTransactionCurrency eq ${posAmountInTransactionCurrency} or AmountInTransactionCurrency eq ${negAmountInTransactionCurrency})`);
 }
 
 // Handle attachment updates
